@@ -43,6 +43,11 @@ try {
       "If preact/debug should be included in the bundle.",
       { default: false },
     )
+    .option(
+      "--pages [pages:string]",
+      "The directory for page components.",
+      { default: 'pages' },
+    )
     .description("Build your application.")
     .action(build)
     .command("start [root]")
@@ -81,6 +86,11 @@ try {
       "If preact/debug should be included in the bundle.",
       { default: true },
     )
+    .option(
+      "--pages [pages:string]",
+      "The directory for page components.",
+      { default: 'pages' },
+    )
     .description("Start your application in development mode.")
     .action(dev)
     .command("create [root]")
@@ -96,7 +106,7 @@ try {
 }
 
 async function build(
-  options: { typecheck: boolean; prerender: boolean; debug: boolean },
+  options: { typecheck: boolean; prerender: boolean; debug: boolean, pages: string },
   root?: string,
 ) {
   root = path.resolve(Deno.cwd(), root ?? "");
@@ -110,7 +120,7 @@ async function build(
   }
 
   // Collect list of all pages
-  const pagesDir = path.join(root, "pages");
+  const pagesDir = path.join(root, options.pages);
   const pages = await findPages(pagesDir);
 
   // Create .dext folder and emit page map
@@ -233,6 +243,7 @@ async function dev(
     typecheck: boolean;
     prerender: boolean;
     debug: boolean;
+    pages: string;
   },
   maybeRoot?: string,
 ) {
@@ -249,7 +260,7 @@ async function dev(
   let cache: RollupCache = { modules: [] };
 
   // Collect list of all pages
-  const pagesDir = path.join(root, "pages");
+  const pagesDir = path.join(root, options.pages);
   const pages = await findPages(pagesDir);
 
   const dextDir = path.join(root, ".dext");

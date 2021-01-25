@@ -152,3 +152,36 @@ integrationTest({
     }
   },
 });
+
+integrationTest({
+  name: "pages_opt",
+  cmd: ["build", '--pages', 'pages_alt'],
+  clean: true,
+  async after(ctx) {
+    assert(ctx.status.success);
+    assertStringIncludes(ctx.stdout, "Build success.");
+
+    assertEquals(
+      JSON.parse(
+        await Deno.readTextFile(join(ctx.dir, ".dext", "pagemap.json")),
+      ),
+      [{ name: "index", route: "/", hasGetStaticPaths: false }],
+    );
+
+    const staticdir = join(ctx.dir, ".dext", "static");
+
+    const indexhtml = join(staticdir, "index.html");
+    assert(await exists(indexhtml));
+    assert(await exists(`${indexhtml}.gz`));
+    assert(await exists(`${indexhtml}.br`));
+
+    const index = await Deno.readTextFile(indexhtml);
+    assertStringIncludes(index, `<div id="__dext">`);
+    assertStringIncludes(index, "<h1>Hello World</h1>");
+
+    assertEquals(
+      await Deno.readTextFile(join(staticdir, "test.txt")),
+      "hello world",
+    );
+  },
+});
